@@ -8,50 +8,50 @@ const excludedWords = [
 
 // Lista dei feed RSS
 const feeds = [
-  { name: "Rai News", url: "https://www.rainews.it/rss/tutti" }, // nuovo feed in cima
-  { name: "Urban Livorno", url: "https://politepol.com/fd/aTWhyA7ES6MO.xml" },
-  { name: "Livorno Today", url: "https://www.livornotoday.it/rss" },
-  { name: "LivornoPress", url: "https://www.livornopress.it/feed/" },
-  { name: "Qui Livorno", url: "https://www.quilivorno.it/feed/" },
-  { name: "Comune", url: "https://www.comune.livorno.it/it/news/feed/" },
-  { name: "Ansa", url: "https://www.ansa.it/toscana/notizie/toscana_rss.xml" },
-  { name: "Toscana", url: "https://www.toscana-notizie.it/archivio/-/asset_publisher/Lyd2Is2gGDzu/rss" },
-  { name: "Il Tirreno", url: "https://politepol.com/fd/XZs73GuQOEsI.xml" },
-  { name: "Livorno24", url: "https://politepol.com/fd/QXTvGCTWZdav.xml" },
-  { name: "Il Telegrafo", url: "https://politepol.com/fd/6zOKXzQRl1ZM.xml" },
-  { name: "Livorno Sera", url: "https://politepol.com/fd/1woLPi7mKwX8.xml" } 
+  { name: "Wired", url: "https://www.wired.it/feed/rss" } // nuovo feed in cima
+  //{ name: "Urban Livorno", url: "https://politepol.com/fd/aTWhyA7ES6MO.xml" },
+  //{ name: "Livorno Today", url: "https://www.livornotoday.it/rss" },
+  //{ name: "LivornoPress", url: "https://www.livornopress.it/feed/" },
+  //{ name: "Qui Livorno", url: "https://www.quilivorno.it/feed/" },
+  //{ name: "Comune", url: "https://www.comune.livorno.it/it/news/feed/" },
+  //{ name: "Ansa", url: "https://www.ansa.it/toscana/notizie/toscana_rss.xml" },
+  //{ name: "Toscana", url: "https://www.toscana-notizie.it/archivio/-/asset_publisher/Lyd2Is2gGDzu/rss" },
+  //{ name: "Il Tirreno", url: "https://politepol.com/fd/XZs73GuQOEsI.xml" },
+  //{ name: "Livorno24", url: "https://politepol.com/fd/QXTvGCTWZdav.xml" },
+  //{ name: "Il Telegrafo", url: "https://politepol.com/fd/6zOKXzQRl1ZM.xml" },
+  //{ name: "Livorno Sera", url: "https://politepol.com/fd/1woLPi7mKwX8.xml" } 
 ];
 
 // Colori testate
 const sourceColors = {
-  "Rai News": "#FCF9BE",          // stesso giallo di Ansa
-  "Livorno Today": "#FDEED9",     // Rosa pesca chiaro
-  "Il Tirreno": "#C9E2F8",        // Azzurro cielo sereno
-  "Ansa": "#FCF9BE",              // Giallo crema
-  "Livorno24": "#D9F7D9",         // Verde menta pallido
-  "Qui Livorno": "#CFF5E7",       // Celeste polvere
-  "Comune": "#EBEBEB",            // Grigio perla
-  "Il Telegrafo": "#D0F0F0",      // Acquamarina tenue
-  "Urban Livorno": "#FFD1DC",     // Rosa cipria
-  "Livorno Sera": "#EBD8ED",      // Rosa 
-  "LivornoPress": "#E6E6FA",      // Lilla lavanda
-  "Toscana": "#F4F0E4"            // Beige sabbia
+  "Wired": "#FCF9BE"                // Giallo
+  //"Livorno Today": "#FDEED9",     // Rosa pesca chiaro
+  //"Il Tirreno": "#C9E2F8",        // Azzurro cielo sereno
+  //"Ansa": "#FCF9BE",              // Giallo crema
+  //"Livorno24": "#D9F7D9",         // Verde menta pallido
+  //"Qui Livorno": "#CFF5E7",       // Celeste polvere
+  //"Comune": "#EBEBEB",            // Grigio perla
+  //"Il Telegrafo": "#D0F0F0",      // Acquamarina tenue
+  //"Urban Livorno": "#FFD1DC",     // Rosa cipria
+  //"Livorno Sera": "#EBD8ED",      // Rosa 
+  //"LivornoPress": "#E6E6FA",      // Lilla lavanda
+  //"Toscana": "#F4F0E4"            // Beige sabbia
 };
 
 // Ordine fisso delle testate
 const sourceOrder = [
-  "Rai News",  // posizionato in cima come Ansa
-  "Ansa",
-  "Il Tirreno",
-  "Il Telegrafo",
-  "Qui Livorno",
-  "Livorno24",
-  "LivornoPress",
-  "Livorno Today",
-  "Urban Livorno",
-  "Livorno Sera",
-  "Toscana",
-  "Comune"
+  "Rai News"  // posizionato in cima come Ansa
+  //"Ansa",
+  //"Il Tirreno",
+  //"Il Telegrafo",
+  //"Qui Livorno",
+  //"Livorno24",
+  //"LivornoPress",
+  //"Livorno Today",
+  //"Urban Livorno",
+  //"Livorno Sera",
+  //"Toscana",
+  //"Comune"
 ];
 
 const container = document.getElementById("news");
@@ -97,9 +97,9 @@ function loadNews() {
             }
 
             // Filtro speciale per ANSA, Toscana e Rai News: solo notizie con "Livorno"
-            if (feed.name === "Ansa" || feed.name === "Toscana" || feed.name === "Rai News") {
-              return /livorno/i.test(title) || /livorno/i.test(description);
-            }
+            //if (feed.name === "Ansa" || feed.name === "Toscana" || feed.name === "Rai News") {
+            //  return /livorno/i.test(title) || /livorno/i.test(description);
+            //}
 
             return true;
           })
