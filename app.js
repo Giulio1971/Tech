@@ -1,9 +1,13 @@
-
 // Parole da escludere (case-insensitive)
 const excludedWords = [
-  "Oroscopo", "Basket", "Calcio", "Pielle",
-  "Libertas", "Serie C", "partita",
-  "Piombino", "Cecina", "Capraia", "lirica"
+  "Oroscopo", "Basket", "Calcio", "Tennis",
+  "Formula 1", "Nuoto", "partita"
+];
+
+// Parole da evidenziare e portare in cima (case-insensitive)
+const priorityWords = [
+  "Livorno", "Pisa", "Lucca", "Versilia",
+  "Viareggio", "Firenze", "Toscana"
 ];
 
 // Lista completa dei feed RSS
@@ -27,7 +31,7 @@ const feeds = [
   { name: "Wired Italia", url: "https://www.wired.it/feed/" }
 ];
 
-// Colore unico celeste chiaro per tutti
+// Colore di default (celeste chiaro)
 const sourceColors = {};
 feeds.forEach(f => sourceColors[f.name] = "#C9E2F8");
 
@@ -42,7 +46,7 @@ function renderAllNews() {
   list.innerHTML = "";
   allItems.forEach(item => {
     const li = document.createElement("li");
-    li.style.backgroundColor = sourceColors[item.source] || "#C9E2F8";
+    li.style.backgroundColor = item.priority ? "#F8C9E2" : (sourceColors[item.source] || "#C9E2F8");
 
     const description = item.description || "";
     const safeDescription = description.replace(/(<([^>]+)>)/gi, ""); // rimuove HTML
@@ -70,6 +74,7 @@ function loadNews() {
             const title = item.title || "";
             const description = item.description || "";
 
+            // Esclusione parole
             for (const word of excludedWords) {
               if (new RegExp(word, "i").test(title) || new RegExp(word, "i").test(description)) {
                 return false;
@@ -81,12 +86,25 @@ function loadNews() {
             const pubDate = new Date(item.pubDate || Date.now());
             pubDate.setHours(pubDate.getHours() - 2); // fuso orario
 
+            const title = item.title || "";
+            const description = item.description || "";
+
+            // Verifica se è una notizia prioritaria
+            let isPriority = false;
+            for (const word of priorityWords) {
+              if (new RegExp(word, "i").test(title) || new RegExp(word, "i").test(description)) {
+                isPriority = true;
+                break;
+              }
+            }
+
             return {
-              title: item.title || "Titolo mancante",
+              title: title || "Titolo mancante",
               link: item.link || "#",
-              description: item.description || "",
+              description: description || "",
               pubDate: pubDate,
-              source: feed.name
+              source: feed.name,
+              priority: isPriority
             };
           })
         )
@@ -98,12 +116,16 @@ function loadNews() {
   ).then(results => {
     allItems = results.flat();
 
-    // Solo ultime 24 ore
+    // Solo ultime 48 ore
     const now = new Date();
-    allItems = allItems.filter(n => (now - n.pubDate) <= 24 * 60 * 60 * 1000);
+    allItems = allItems.filter(n => (now - n.pubDate) <= 48 * 60 * 60 * 1000);
 
-    // Ordinamento per data decrescente
-    allItems.sort((a, b) => b.pubDate - a.pubDate);
+    // Ordinamento: prima prioritarie, poi per data decrescente
+    allItems.sort((a, b) => {
+      if (a.priority && !b.priority) return -1;
+      if (!a.priority && b.priority) return 1;
+      return b.pubDate - a.pubDate;
+    });
 
     renderAllNews();
   });
