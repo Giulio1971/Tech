@@ -117,9 +117,9 @@ function loadNews() {
   ).then(results => {
     let items = results.flat();
 
-    // Solo ultime 24 ore
+    // Solo ultime 48 ore
     const now = new Date();
-    items = items.filter(n => (now - n.pubDate) <= 24 * 60 * 60 * 1000);
+    items = items.filter(n => (now - n.pubDate) <= 48 * 60 * 60 * 1000);
 
     // Split in prioritarie, televideo e normali
     const priorityItems = items.filter(n => n.priority);
