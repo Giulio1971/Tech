@@ -28,7 +28,8 @@ const feeds = [
   { name: "ANSA Politica", url: "https://www.ansa.it/sito/ansait_rss.xml/politica.xml" },
   { name: "TGCOM24 Cronaca", url: "https://www.tgcom24.mediaset.it/rss/cronaca.xml" },
   { name: "TGCOM24 Politica", url: "https://www.tgcom24.mediaset.it/rss/politica.xml" },
-  { name: "Wired Italia", url: "https://www.wired.it/feed/" }
+  { name: "Wired Italia", url: "https://www.wired.it/feed/" },
+  { name: "Televideo RAI", url: "https://www.servizitelevideo.rai.it/televideo/pub/rss101.xml" }
 ];
 
 // Colore di default (celeste chiaro)
@@ -120,9 +121,10 @@ function loadNews() {
     const now = new Date();
     items = items.filter(n => (now - n.pubDate) <= 24 * 60 * 60 * 1000);
 
-    // Split prioritarie e non
+    // Split in prioritarie, televideo e normali
     const priorityItems = items.filter(n => n.priority);
-    const normalItems = items.filter(n => !n.priority);
+    const televideoItems = items.filter(n => n.source === "Televideo RAI" && !n.priority);
+    const normalItems = items.filter(n => n.source !== "Televideo RAI" && !n.priority);
 
     // Funzione per assegnare "peso" in base al gruppo testata
     function getSourceRank(source) {
@@ -142,8 +144,11 @@ function loadNews() {
       return b.pubDate - a.pubDate;
     });
 
-    // Combina prioritarie + normali
-    allItems = [...priorityItems, ...normalItems];
+    // Ordina anche Televideo per data
+    televideoItems.sort((a, b) => b.pubDate - a.pubDate);
+
+    // Combina: prioritarie → televideo → normali
+    allItems = [...priorityItems, ...televideoItems, ...normalItems];
 
     renderAllNews();
   });
