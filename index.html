@@ -75,7 +75,7 @@
 
       #news li a {
         display: -webkit-box;
-        -webkit-line-clamp: 4; /* <-- modificato da 3 a 4 */
+        -webkit-line-clamp: 4; 
         -webkit-box-orient: vertical;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -85,11 +85,11 @@
         font-style: italic;
         font-size: 14px;
         color: #000;
-        margin-top: 0;
+        margin-top: 4px;
       }
     }
 
-    /* Layout mobile: lista verticale corretta */
+    /* Layout mobile: lista verticale */
     @media (max-width: 1023px) {
       #news ul {
         display: block;
@@ -110,7 +110,6 @@
         flex-direction: column;
       }
 
-      /* Testata in italico anche su mobile */
       #news li div {
         font-style: italic;
         font-size: 14px;
@@ -125,6 +124,3 @@
   <script src="app.js"></script>
 </body>
 </html>
-
-
-
