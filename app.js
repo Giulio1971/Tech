@@ -1,11 +1,12 @@
-// Parole da escludere
+
+// Parole da escludere (case-insensitive)
 const excludedWords = [
   "Oroscopo", "Basket", "Calcio", "Pielle",
   "Libertas", "Serie C", "partita",
   "Piombino", "Cecina", "Capraia", "lirica"
 ];
 
-// Feed RSS
+// Lista completa dei feed RSS
 const feeds = [
   { name: "Il Fatto Quotidiano", url: "https://www.ilfattoquotidiano.it/rss/" },
   { name: "Fanpage", url: "https://www.fanpage.it/feed/" },
@@ -26,89 +27,90 @@ const feeds = [
   { name: "Wired Italia", url: "https://www.wired.it/feed/" }
 ];
 
-// Contenitore
+// Colore unico celeste chiaro per tutti
+const sourceColors = {};
+feeds.forEach(f => sourceColors[f.name] = "#C9E2F8");
+
 const container = document.getElementById("news");
-if (!container) {
-  console.error("Elemento #news non trovato nell'HTML");
-}
+const list = document.createElement("ul");
+container.appendChild(list);
 
-let allFeedsData = [];
+let allItems = [];
 
-// Rendering a blocchi per feed
-function renderFeeds() {
-  container.innerHTML = "";
-  if (allFeedsData.length === 0) {
-    container.innerHTML = "<p>Nessuna notizia disponibile.</p>";
-    return;
-  }
+// --- Rendering notizie ---
+function renderAllNews() {
+  list.innerHTML = "";
+  allItems.forEach(item => {
+    const li = document.createElement("li");
+    li.style.backgroundColor = sourceColors[item.source] || "#C9E2F8";
 
-  allFeedsData.forEach(feedData => {
-    const block = document.createElement("div");
-    block.className = "feed-block";
+    const description = item.description || "";
+    const safeDescription = description.replace(/(<([^>]+)>)/gi, ""); // rimuove HTML
+    const shortDesc = safeDescription.length > 300 ? safeDescription.substring(0, 300) + "..." : safeDescription;
 
-    const title = document.createElement("div");
-    title.className = "feed-title";
-    title.textContent = feedData.name;
-    block.appendChild(title);
+    li.innerHTML = `
+      <a href="${item.link}" target="_blank" class="news-title">${item.title}</a>
+      <div class="news-desc">${shortDesc}</div>
+      <div class="news-source">${item.source}</div>
+    `;
 
-    const ul = document.createElement("ul");
-
-    feedData.items.forEach(item => {
-      const li = document.createElement("li");
-
-      const description = item.description || "";
-      const safeDescription = description.replace(/(<([^>]+)>)/gi, "");
-      const shortDesc = safeDescription.length > 300
-        ? safeDescription.substring(0, 300) + "..."
-        : safeDescription;
-
-      li.innerHTML = `
-        <a href="${item.link}" target="_blank" class="news-title">${item.title}</a>
-        <div class="news-desc">${shortDesc}</div>
-        <div class="news-source">${item.source}</div>
-      `;
-
-      ul.appendChild(li);
-    });
-
-    block.appendChild(ul);
-    container.appendChild(block);
+    list.appendChild(li);
   });
 }
 
-// Caricamento
+// --- Caricamento notizie ---
 function loadNews() {
   Promise.all(
     feeds.map(feed => {
       const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}`;
       return fetch(apiUrl)
         .then(res => res.json())
-        .then(data => {
-          if (!data.items) return { name: feed.name, items: [] };
+        .then(data => data.items
+          .filter(item => {
+            const title = item.title || "";
+            const description = item.description || "";
 
-          const now = new Date();
-          const filteredItems = data.items
-            .filter(item => {
-              const title = item.title || "";
-              const description = item.description || "";
-              return !excludedWords.some(word =>
-                new RegExp(word, "i").test(title) || new RegExp(word, "i").test(description)
-              );
-            })
-            .map(item => {
-              const pubDate = new Date(item.pubDate || Date.now());
-              pubDate.setHours(pubDate.getHours() - 2);
-              return {
-                title: item.title || "Titolo mancante",
-                link: item.link || "#",
-                description: item.description || "",
-                pubDate: pubDate,
-                source: feed.name
-              };
-            })
-            .filter(n => (now - n.pubDate) <= 24 * 60 * 60 * 1000)
-            .sort((a, b) => b.pubDate - a.pubDate); // Ordina per data nel feed
+            for (const word of excludedWords) {
+              if (new RegExp(word, "i").test(title) || new RegExp(word, "i").test(description)) {
+                return false;
+              }
+            }
+            return true;
+          })
+          .map(item => {
+            const pubDate = new Date(item.pubDate || Date.now());
+            pubDate.setHours(pubDate.getHours() - 2); // fuso orario
 
-          return { name: feed.name, items: filteredItems };
-        })
-        .catch
+            return {
+              title: item.title || "Titolo mancante",
+              link: item.link || "#",
+              description: item.description || "",
+              pubDate: pubDate,
+              source: feed.name
+            };
+          })
+        )
+        .catch(err => {
+          console.error("Errore nel caricare", feed.name, err);
+          return [];
+        });
+    })
+  ).then(results => {
+    allItems = results.flat();
+
+    // Solo ultime 24 ore
+    const now = new Date();
+    allItems = allItems.filter(n => (now - n.pubDate) <= 24 * 60 * 60 * 1000);
+
+    // Ordinamento per data decrescente
+    allItems.sort((a, b) => b.pubDate - a.pubDate);
+
+    renderAllNews();
+  });
+}
+
+// Caricamento iniziale
+loadNews();
+
+// Refresh ogni 5 minuti
+setInterval(loadNews, 300000);
