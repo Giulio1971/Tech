@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -69,7 +68,7 @@
       margin-top: auto;
     }
 
-    /* Layout desktop: mosaico con ellissi e hover */
+    /* Layout desktop */
     @media (min-width: 1024px) {
       #news ul {
         display: grid;
@@ -93,41 +92,23 @@
         transform: scale(1.03);
         box-shadow: 0 4px 12px rgba(0,0,0,0.2);
       }
-
-      /* Titolo desktop: nero, non sottolineato, cliccabile */
-      .news-title {
-        font-weight: 600;
-        font-size: 16px;
-        color: #000;
-        text-decoration: none;
-        margin-bottom: 4px;
-      }
-
-      .news-title:hover {
-        text-decoration: underline;
-      }
-
-      /* Descrizione desktop: font leggermente più piccolo */
-      .news-desc {
-        font-size: 14px;
-        color: #333;
-        margin: 4px 0;
-        line-height: 1.3;
-      }
-
-      /* Fonte desktop */
-      .news-source {
-        font-style: italic;
-        font-size: 13px;
-        color: #000;
-        margin-top: auto;
-      }
     }
 
-    /* Layout mobile: lista verticale */
+    /* Layout mobile */
     @media (max-width: 1023px) {
       #news ul {
         display: block;
         width: 100%;
         padding: 0;
-        margin:
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>📰 Livorno News</h1>
+  <div id="news"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
