@@ -26,9 +26,9 @@ const feeds = [
   { name: "Wired Italia", url: "https://www.wired.it/feed/" }
 ];
 
-// Colore unico celeste chiaro per tutti (modificabile singolarmente)
+// Colore unico celeste chiaro per tutti
 const sourceColors = {};
-feeds.forEach(f => sourceColors[f.name] = "#C9E2F8"); 
+feeds.forEach(f => sourceColors[f.name] = "#C9E2F8");
 
 const container = document.getElementById("news");
 const list = document.createElement("ul");
@@ -41,17 +41,14 @@ function renderAllNews() {
   list.innerHTML = "";
   allItems.forEach(item => {
     const li = document.createElement("li");
-    li.style.backgroundColor = sourceColors[item.source] || "#ffffff";
+    li.style.backgroundColor = sourceColors[item.source] || "#C9E2F8";
 
-    // Limitazione alle prime 4 righe della descrizione
     const descLines = item.description.split("\n").slice(0,4).join("<br>");
 
     li.innerHTML = `
-      <a href="${item.link}" target="_blank">${item.title}</a>
-      <br>
-      ${descLines}
-      <br>
-      <div>${item.source}</div>
+      <a href="${item.link}" target="_blank" class="news-title">${item.title}</a>
+      <div class="news-desc">${descLines}</div>
+      <div class="news-source">${item.source}</div>
     `;
 
     list.appendChild(li);
