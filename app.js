@@ -114,18 +114,36 @@ function loadNews() {
         });
     })
   ).then(results => {
-    allItems = results.flat();
+    let items = results.flat();
 
-    // Solo ultime 48 ore
+    // Solo ultime 24 ore
     const now = new Date();
-    allItems = allItems.filter(n => (now - n.pubDate) <= 48 * 60 * 60 * 1000);
+    items = items.filter(n => (now - n.pubDate) <= 24 * 60 * 60 * 1000);
 
-    // Ordinamento: prima prioritarie, poi per data decrescente
-    allItems.sort((a, b) => {
-      if (a.priority && !b.priority) return -1;
-      if (!a.priority && b.priority) return 1;
+    // Split prioritarie e non
+    const priorityItems = items.filter(n => n.priority);
+    const normalItems = items.filter(n => !n.priority);
+
+    // Funzione per assegnare "peso" in base al gruppo testata
+    function getSourceRank(source) {
+      if (source === "Il Fatto Quotidiano") return 1;
+      if (/Repubblica/i.test(source)) return 2;
+      if (/Corriere/i.test(source)) return 3;
+      if (/ANSA/i.test(source)) return 4;
+      if (/TGCOM24/i.test(source)) return 5;
+      return 6;
+    }
+
+    // Ordina le normali in base a rank e data
+    normalItems.sort((a, b) => {
+      const rankA = getSourceRank(a.source);
+      const rankB = getSourceRank(b.source);
+      if (rankA !== rankB) return rankA - rankB;
       return b.pubDate - a.pubDate;
     });
+
+    // Combina prioritarie + normali
+    allItems = [...priorityItems, ...normalItems];
 
     renderAllNews();
   });
