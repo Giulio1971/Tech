@@ -26,46 +26,53 @@ const feeds = [
   { name: "Wired Italia", url: "https://www.wired.it/feed/" }
 ];
 
-// Colore uniforme
-const sourceColors = {};
-feeds.forEach(f => sourceColors[f.name] = "#C9E2F8");
-
 // Contenitore
 const container = document.getElementById("news");
 if (!container) {
   console.error("Elemento #news non trovato nell'HTML");
 }
 
-const list = document.createElement("ul");
-container.appendChild(list);
+let allFeedsData = [];
 
-let allItems = [];
-
-// Rendering
-function renderAllNews() {
-  list.innerHTML = "";
-  if (allItems.length === 0) {
-    list.innerHTML = "<li>Nessuna notizia disponibile.</li>";
+// Rendering a blocchi per feed
+function renderFeeds() {
+  container.innerHTML = "";
+  if (allFeedsData.length === 0) {
+    container.innerHTML = "<p>Nessuna notizia disponibile.</p>";
     return;
   }
 
-  allItems.forEach(item => {
-    const li = document.createElement("li");
-    li.style.backgroundColor = sourceColors[item.source] || "#C9E2F8";
+  allFeedsData.forEach(feedData => {
+    const block = document.createElement("div");
+    block.className = "feed-block";
 
-    const description = item.description || "";
-    const safeDescription = description.replace(/(<([^>]+)>)/gi, "");
-    const shortDesc = safeDescription.length > 300
-      ? safeDescription.substring(0, 300) + "..."
-      : safeDescription;
+    const title = document.createElement("div");
+    title.className = "feed-title";
+    title.textContent = feedData.name;
+    block.appendChild(title);
 
-    li.innerHTML = `
-      <a href="${item.link}" target="_blank" class="news-title">${item.title}</a>
-      <div class="news-desc">${shortDesc}</div>
-      <div class="news-source">${item.source}</div>
-    `;
+    const ul = document.createElement("ul");
 
-    list.appendChild(li);
+    feedData.items.forEach(item => {
+      const li = document.createElement("li");
+
+      const description = item.description || "";
+      const safeDescription = description.replace(/(<([^>]+)>)/gi, "");
+      const shortDesc = safeDescription.length > 300
+        ? safeDescription.substring(0, 300) + "..."
+        : safeDescription;
+
+      li.innerHTML = `
+        <a href="${item.link}" target="_blank" class="news-title">${item.title}</a>
+        <div class="news-desc">${shortDesc}</div>
+        <div class="news-source">${item.source}</div>
+      `;
+
+      ul.appendChild(li);
+    });
+
+    block.appendChild(ul);
+    container.appendChild(block);
   });
 }
 
@@ -77,9 +84,10 @@ function loadNews() {
       return fetch(apiUrl)
         .then(res => res.json())
         .then(data => {
-          if (!data.items) return [];
-          // Filtra e ordina per data all'interno del feed
-          return data.items
+          if (!data.items) return { name: feed.name, items: [] };
+
+          const now = new Date();
+          const filteredItems = data.items
             .filter(item => {
               const title = item.title || "";
               const description = item.description || "";
@@ -98,25 +106,9 @@ function loadNews() {
                 source: feed.name
               };
             })
-            .filter(n => {
-              // Solo ultime 24 ore
-              const now = new Date();
-              return (now - n.pubDate) <= 24 * 60 * 60 * 1000;
-            })
-            .sort((a, b) => b.pubDate - a.pubDate); // Ordina per data decrescente nel feed
-        })
-        .catch(err => {
-          console.error("Errore nel caricare", feed.name, err);
-          return [];
-        });
-    })
-  ).then(results => {
-    // results è un array di array, già nell'ordine dei feed
-    allItems = results.flat();
-    renderAllNews();
-  });
-}
+            .filter(n => (now - n.pubDate) <= 24 * 60 * 60 * 1000)
+            .sort((a, b) => b.pubDate - a.pubDate); // Ordina per data nel feed
 
-// Avvio
-loadNews();
-setInterval(loadNews, 300000);
+          return { name: feed.name, items: filteredItems };
+        })
+        .catch
