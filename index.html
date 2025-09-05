@@ -68,7 +68,7 @@
       margin-top: auto;
     }
 
-    /* Layout desktop: mosaico con hover */
+    /* Layout desktop: mosaico con ellissi e hover */
     @media (min-width: 1024px) {
       #news ul {
         display: grid;
@@ -79,6 +79,11 @@
       #news li {
         height: 220px;
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding: 12px;
+        border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
       }
@@ -86,6 +91,35 @@
       #news li:hover {
         transform: scale(1.03);
         box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      }
+
+      /* Titolo desktop: nero, non sottolineato, cliccabile */
+      .news-title {
+        font-weight: 600;
+        font-size: 16px;
+        color: #000;
+        text-decoration: none;
+        margin-bottom: 4px;
+      }
+
+      .news-title:hover {
+        text-decoration: underline;
+      }
+
+      /* Descrizione desktop: font leggermente più piccolo */
+      .news-desc {
+        font-size: 14px;
+        color: #333;
+        margin: 4px 0;
+        line-height: 1.3;
+      }
+
+      /* Fonte desktop */
+      .news-source {
+        font-style: italic;
+        font-size: 13px;
+        color: #000;
+        margin-top: auto;
       }
     }
 
@@ -95,13 +129,4 @@
         display: block;
         width: 100%;
         padding: 0;
-        margin: 0;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div id="news"></div>
-  <script src="app.js"></script>
-</body>
-</html>
+        margin:
