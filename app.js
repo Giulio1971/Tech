@@ -45,25 +45,12 @@ let allItems = [];
 // --- Rendering notizie ---
 function renderAllNews() {
   list.innerHTML = "";
-  const now = new Date();
-
   allItems.forEach(item => {
     const li = document.createElement("li");
-
-    // Colore sfondo
-    if (item.priority) {
-      li.style.backgroundColor = "#F8C9E2"; // rosa prioritarie
-    } else {
-      const hoursDiff = (now - item.pubDate) / (1000 * 60 * 60);
-      if (hoursDiff <= 24) {
-        li.style.backgroundColor = "#C9E2F8"; // celeste ultime 24h
-      } else {
-        li.style.backgroundColor = "#E0E0E0"; // grigio chiaro 24-48h
-      }
-    }
+    li.style.backgroundColor = item.priority ? "#F8C9E2" : (sourceColors[item.source] || "#C9E2F8");
 
     const description = item.description || "";
-    const safeDescription = description.replace(/(<([^>]+)>)/gi, "");
+    const safeDescription = description.replace(/(<([^>]+)>)/gi, ""); // rimuove HTML
     const shortDesc = safeDescription.length > 300 ? safeDescription.substring(0, 300) + "..." : safeDescription;
 
     li.innerHTML = `
@@ -87,6 +74,8 @@ function loadNews() {
           .filter(item => {
             const title = item.title || "";
             const description = item.description || "";
+
+            // Esclusione parole
             for (const word of excludedWords) {
               if (new RegExp(word, "i").test(title) || new RegExp(word, "i").test(description)) {
                 return false;
@@ -96,12 +85,12 @@ function loadNews() {
           })
           .map(item => {
             const pubDate = new Date(item.pubDate || Date.now());
-            pubDate.setHours(pubDate.getHours() - 2);
+            pubDate.setHours(pubDate.getHours() - 2); // fuso orario
 
             const title = item.title || "";
             const description = item.description || "";
 
-            // Prioritarie
+            // Verifica se è una notizia prioritaria
             let isPriority = false;
             for (const word of priorityWords) {
               if (new RegExp(word, "i").test(title) || new RegExp(word, "i").test(description)) {
@@ -128,9 +117,9 @@ function loadNews() {
   ).then(results => {
     let items = results.flat();
 
-    // Solo ultime 48 ore
+    // Solo ultime 24 ore
     const now = new Date();
-    items = items.filter(n => (now - n.pubDate) <= 48 * 60 * 60 * 1000);
+    items = items.filter(n => (now - n.pubDate) <= 24 * 60 * 60 * 1000);
 
     // Split in prioritarie, televideo e normali
     const priorityItems = items.filter(n => n.priority);
