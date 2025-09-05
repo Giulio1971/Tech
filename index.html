@@ -1,115 +1,133 @@
-// Parole da escludere (case-insensitive)
-const excludedWords = [
-  "Oroscopo", "Basket", "Calcio", "Pielle",
-  "Libertas", "Serie C", "partita",
-  "Piombino", "Cecina", "Capraia", "lirica"
-];
 
-// Lista completa dei feed RSS
-const feeds = [
-  { name: "Il Fatto Quotidiano", url: "https://www.ilfattoquotidiano.it/rss/" },
-  { name: "Fanpage", url: "https://www.fanpage.it/feed/" },
-  { name: "Corriere Politica", url: "https://www.corriere.it/rss/politica.xml" },
-  { name: "Corriere Cronaca", url: "https://www.corriere.it/rss/cronache.xml" },
-  { name: "Corriere Economia", url: "https://www.corriere.it/rss/economia.xml" },
-  { name: "Corriere Tecnologia", url: "https://www.corriere.it/rss/tecnologia.xml" },
-  { name: "Repubblica Notizie", url: "https://www.repubblica.it/rss/homepage/rss2.0.xml" },
-  { name: "Repubblica Politica", url: "https://www.repubblica.it/rss/politica/rss2.0.xml" },
-  { name: "Repubblica Economia", url: "https://www.repubblica.it/rss/economia/rss2.0.xml" },
-  { name: "Repubblica Tecnologia", url: "https://www.repubblica.it/rss/tecnologia/rss2.0.xml" },
-  { name: "La Stampa", url: "https://www.lastampa.it/rss/ultimora.xml" },
-  { name: "Il Sole 24 Ore", url: "https://www.ilsole24ore.com/rss/italia.xml" },
-  { name: "ANSA Cronaca", url: "https://www.ansa.it/sito/ansait_rss.xml" },
-  { name: "ANSA Politica", url: "https://www.ansa.it/sito/ansait_rss.xml/politica.xml" },
-  { name: "TGCOM24 Cronaca", url: "https://www.tgcom24.mediaset.it/rss/cronaca.xml" },
-  { name: "TGCOM24 Politica", url: "https://www.tgcom24.mediaset.it/rss/politica.xml" },
-  { name: "Wired Italia", url: "https://www.wired.it/feed/" }
-];
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <title>Livorno News</title>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #fafafa;
+      max-width: 1200px;
+      margin: auto;
+      padding: 16px;
+      box-sizing: border-box;
+      line-height: 1.5;
+      font-size: 16px;
+      color: #212121;
+    }
 
-// Colore unico celeste chiaro per tutti
-const sourceColors = {};
-feeds.forEach(f => sourceColors[f.name] = "#C9E2F8");
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+    }
 
-const container = document.getElementById("news");
-const list = document.createElement("ul");
-container.appendChild(list);
+    li {
+      padding: 16px;
+      border-bottom: 1px solid rgba(0,0,0,0.12);
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
 
-let allItems = [];
+    li:last-child {
+      border-bottom: none;
+    }
 
-// --- Rendering notizie ---
-function renderAllNews() {
-  list.innerHTML = "";
-  allItems.forEach(item => {
-    const li = document.createElement("li");
-    li.style.backgroundColor = sourceColors[item.source] || "#C9E2F8";
+    a {
+      text-decoration: none;
+    }
 
-    const description = item.description || "";
-    const safeDescription = description.replace(/(<([^>]+)>)/gi, ""); // rimuove HTML
-    const shortDesc = safeDescription.length > 300 ? safeDescription.substring(0, 300) + "..." : safeDescription;
+    a:hover {
+      text-decoration: underline;
+    }
 
-    li.innerHTML = `
-      <a href="${item.link}" target="_blank" class="news-title">${item.title}</a>
-      <div class="news-desc">${shortDesc}</div>
-      <div class="news-source">${item.source}</div>
-    `;
+    .news-title {
+      font-weight: 600;
+      font-size: 16px;
+      color: #000;
+      margin-bottom: 4px;
+    }
 
-    list.appendChild(li);
-  });
-}
+    .news-desc {
+      font-size: 14px;
+      color: #333;
+      margin: 4px 0;
+      line-height: 1.4;
+    }
 
-// --- Caricamento notizie ---
-function loadNews() {
-  Promise.all(
-    feeds.map(feed => {
-      const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}`;
-      return fetch(apiUrl)
-        .then(res => res.json())
-        .then(data => data.items
-          .filter(item => {
-            const title = item.title || "";
-            const description = item.description || "";
+    .news-source {
+      font-style: italic;
+      font-size: 13px;
+      color: #000;
+      margin-top: auto;
+    }
 
-            for (const word of excludedWords) {
-              if (new RegExp(word, "i").test(title) || new RegExp(word, "i").test(description)) {
-                return false;
-              }
-            }
-            return true;
-          })
-          .map(item => {
-            const pubDate = new Date(item.pubDate || Date.now());
-            pubDate.setHours(pubDate.getHours() - 2); // fuso orario
+    /* Layout desktop: mosaico con ellissi e hover */
+    @media (min-width: 1024px) {
+      #news ul {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
+      }
 
-            return {
-              title: item.title || "Titolo mancante",
-              link: item.link || "#",
-              description: item.description || "",
-              pubDate: pubDate,
-              source: feed.name
-            };
-          })
-        )
-        .catch(err => {
-          console.error("Errore nel caricare", feed.name, err);
-          return [];
-        });
-    })
-  ).then(results => {
-    allItems = results.flat();
+      #news li {
+        height: 220px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding: 12px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
 
-    // Solo ultime 24 ore
-    const now = new Date();
-    allItems = allItems.filter(n => (now - n.pubDate) <= 24 * 60 * 60 * 1000);
+      #news li:hover {
+        transform: scale(1.03);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      }
 
-    // Ordinamento per data decrescente
-    allItems.sort((a, b) => b.pubDate - a.pubDate);
+      /* Titolo desktop: nero, non sottolineato, cliccabile */
+      .news-title {
+        font-weight: 600;
+        font-size: 16px;
+        color: #000;
+        text-decoration: none;
+        margin-bottom: 4px;
+      }
 
-    renderAllNews();
-  });
-}
+      .news-title:hover {
+        text-decoration: underline;
+      }
 
-// Caricamento iniziale
-loadNews();
+      /* Descrizione desktop: font leggermente più piccolo */
+      .news-desc {
+        font-size: 14px;
+        color: #333;
+        margin: 4px 0;
+        line-height: 1.3;
+      }
 
-// Refresh ogni 5 minuti
-setInterval(loadNews, 300000);
+      /* Fonte desktop */
+      .news-source {
+        font-style: italic;
+        font-size: 13px;
+        color: #000;
+        margin-top: auto;
+      }
+    }
+
+    /* Layout mobile: lista verticale */
+    @media (max-width: 1023px) {
+      #news ul {
+        display: block;
+        width: 100%;
+        padding: 0;
+        margin:
