@@ -26,9 +26,13 @@
     }
 
     li {
-      padding: 16px 0;
+      padding: 16px;
       border-bottom: 1px solid rgba(0,0,0,0.12);
       box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      border-radius: 8px;
+      margin-bottom: 8px;
     }
 
     li:last-child {
@@ -36,17 +40,35 @@
     }
 
     a {
-      color: #000000;
       text-decoration: none;
-      font-size: 16px;
-      font-weight: 400;
     }
 
     a:hover {
       text-decoration: underline;
     }
 
-    /* Layout desktop: mosaico con ellissi e hover */
+    .news-title {
+      font-weight: 600;
+      font-size: 16px;
+      color: #000;
+      margin-bottom: 4px;
+    }
+
+    .news-desc {
+      font-size: 14px;
+      color: #333;
+      margin: 4px 0;
+      line-height: 1.4;
+    }
+
+    .news-source {
+      font-style: italic;
+      font-size: 13px;
+      color: #000;
+      margin-top: auto;
+    }
+
+    /* Layout desktop: mosaico con hover */
     @media (min-width: 1024px) {
       #news ul {
         display: grid;
@@ -55,37 +77,15 @@
       }
 
       #news li {
-        border-bottom: none;
-        height: 180px;
+        height: 220px;
         overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        padding: 12px;
-        border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        margin-bottom: 0;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
       }
 
       #news li:hover {
         transform: scale(1.03);
         box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      }
-
-      #news li a {
-        display: -webkit-box;
-        -webkit-line-clamp: 4; 
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      #news li div {
-        font-style: italic;
-        font-size: 14px;
-        color: #000;
-        margin-top: 4px;
       }
     }
 
@@ -94,27 +94,8 @@
       #news ul {
         display: block;
         width: 100%;
-        box-sizing: border-box;
         padding: 0;
         margin: 0;
-      }
-
-      #news li {
-        width: 100%;
-        max-width: 100%;
-        margin-bottom: 8px;
-        border-bottom: 1px solid rgba(0,0,0,0.12);
-        box-sizing: border-box;
-        padding: 12px;
-        display: flex;
-        flex-direction: column;
-      }
-
-      #news li div {
-        font-style: italic;
-        font-size: 14px;
-        color: #000;
-        margin-top: 4px;
       }
     }
   </style>
