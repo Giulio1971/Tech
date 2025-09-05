@@ -1,4 +1,3 @@
-
 // Parole da escludere (case-insensitive)
 const excludedWords = [
   "Oroscopo", "Basket", "Calcio", "Pielle",
@@ -6,53 +5,30 @@ const excludedWords = [
   "Piombino", "Cecina", "Capraia", "lirica"
 ];
 
-// Lista dei feed RSS
+// Lista completa dei feed RSS
 const feeds = [
-  { name: "Wired", url: "https://www.wired.it/feed/rss" } // nuovo feed in cima
-  //{ name: "Urban Livorno", url: "https://politepol.com/fd/aTWhyA7ES6MO.xml" },
-  //{ name: "Livorno Today", url: "https://www.livornotoday.it/rss" },
-  //{ name: "LivornoPress", url: "https://www.livornopress.it/feed/" },
-  //{ name: "Qui Livorno", url: "https://www.quilivorno.it/feed/" },
-  //{ name: "Comune", url: "https://www.comune.livorno.it/it/news/feed/" },
-  //{ name: "Ansa", url: "https://www.ansa.it/toscana/notizie/toscana_rss.xml" },
-  //{ name: "Toscana", url: "https://www.toscana-notizie.it/archivio/-/asset_publisher/Lyd2Is2gGDzu/rss" },
-  //{ name: "Il Tirreno", url: "https://politepol.com/fd/XZs73GuQOEsI.xml" },
-  //{ name: "Livorno24", url: "https://politepol.com/fd/QXTvGCTWZdav.xml" },
-  //{ name: "Il Telegrafo", url: "https://politepol.com/fd/6zOKXzQRl1ZM.xml" },
-  //{ name: "Livorno Sera", url: "https://politepol.com/fd/1woLPi7mKwX8.xml" } 
+  { name: "Il Fatto Quotidiano", url: "https://www.ilfattoquotidiano.it/rss/" },
+  { name: "Fanpage", url: "https://www.fanpage.it/feed/" },
+  { name: "Corriere Politica", url: "https://www.corriere.it/rss/politica.xml" },
+  { name: "Corriere Cronaca", url: "https://www.corriere.it/rss/cronache.xml" },
+  { name: "Corriere Economia", url: "https://www.corriere.it/rss/economia.xml" },
+  { name: "Corriere Tecnologia", url: "https://www.corriere.it/rss/tecnologia.xml" },
+  { name: "Repubblica Notizie", url: "https://www.repubblica.it/rss/homepage/rss2.0.xml" },
+  { name: "Repubblica Politica", url: "https://www.repubblica.it/rss/politica/rss2.0.xml" },
+  { name: "Repubblica Economia", url: "https://www.repubblica.it/rss/economia/rss2.0.xml" },
+  { name: "Repubblica Tecnologia", url: "https://www.repubblica.it/rss/tecnologia/rss2.0.xml" },
+  { name: "La Stampa", url: "https://www.lastampa.it/rss/ultimora.xml" },
+  { name: "Il Sole 24 Ore", url: "https://www.ilsole24ore.com/rss/italia.xml" },
+  { name: "ANSA Cronaca", url: "https://www.ansa.it/sito/ansait_rss.xml" },
+  { name: "ANSA Politica", url: "https://www.ansa.it/sito/ansait_rss.xml/politica.xml" },
+  { name: "TGCOM24 Cronaca", url: "https://www.tgcom24.mediaset.it/rss/cronaca.xml" },
+  { name: "TGCOM24 Politica", url: "https://www.tgcom24.mediaset.it/rss/politica.xml" },
+  { name: "Wired Italia", url: "https://www.wired.it/feed/" }
 ];
 
-// Colori testate
-const sourceColors = {
-  "Wired": "#FCF9BE"                // Giallo
-  //"Livorno Today": "#FDEED9",     // Rosa pesca chiaro
-  //"Il Tirreno": "#C9E2F8",        // Azzurro cielo sereno
-  //"Ansa": "#FCF9BE",              // Giallo crema
-  //"Livorno24": "#D9F7D9",         // Verde menta pallido
-  //"Qui Livorno": "#CFF5E7",       // Celeste polvere
-  //"Comune": "#EBEBEB",            // Grigio perla
-  //"Il Telegrafo": "#D0F0F0",      // Acquamarina tenue
-  //"Urban Livorno": "#FFD1DC",     // Rosa cipria
-  //"Livorno Sera": "#EBD8ED",      // Rosa 
-  //"LivornoPress": "#E6E6FA",      // Lilla lavanda
-  //"Toscana": "#F4F0E4"            // Beige sabbia
-};
-
-// Ordine fisso delle testate
-const sourceOrder = [
-  "Rai News"  // posizionato in cima come Ansa
-  //"Ansa",
-  //"Il Tirreno",
-  //"Il Telegrafo",
-  //"Qui Livorno",
-  //"Livorno24",
-  //"LivornoPress",
-  //"Livorno Today",
-  //"Urban Livorno",
-  //"Livorno Sera",
-  //"Toscana",
-  //"Comune"
-];
+// Colore unico celeste chiaro per tutti (modificabile singolarmente)
+const sourceColors = {};
+feeds.forEach(f => sourceColors[f.name] = "#C9E2F8"); 
 
 const container = document.getElementById("news");
 const list = document.createElement("ul");
@@ -67,8 +43,14 @@ function renderAllNews() {
     const li = document.createElement("li");
     li.style.backgroundColor = sourceColors[item.source] || "#ffffff";
 
+    // Limitazione alle prime 4 righe della descrizione
+    const descLines = item.description.split("\n").slice(0,4).join("<br>");
+
     li.innerHTML = `
       <a href="${item.link}" target="_blank">${item.title}</a>
+      <br>
+      ${descLines}
+      <br>
       <div>${item.source}</div>
     `;
 
@@ -88,29 +70,21 @@ function loadNews() {
             const title = item.title || "";
             const description = item.description || "";
 
-            // Esclusione parole
             for (const word of excludedWords) {
-              const regex = new RegExp(word, "i");
-              if (regex.test(title) || regex.test(description)) {
+              if (new RegExp(word, "i").test(title) || new RegExp(word, "i").test(description)) {
                 return false;
               }
             }
-
-            // Filtro speciale per ANSA, Toscana e Rai News: solo notizie con "Livorno"
-            //if (feed.name === "Ansa" || feed.name === "Toscana" || feed.name === "Rai News") {
-            //  return /livorno/i.test(title) || /livorno/i.test(description);
-            //}
-
             return true;
           })
           .map(item => {
-            // Correggi fuso orario (-2h)
             const pubDate = new Date(item.pubDate);
-            pubDate.setHours(pubDate.getHours() - 2);
+            pubDate.setHours(pubDate.getHours() - 2); // fuso orario
 
             return {
-              title: item.title.replace(/Il Tirreno\s*$/i, ""), // rimuovi "Il Tirreno" dai titoli
+              title: item.title,
               link: item.link,
+              description: item.description.replace(/(<([^>]+)>)/gi, ""), // rimuove HTML
               pubDate: pubDate,
               source: feed.name
             };
@@ -124,19 +98,12 @@ function loadNews() {
   ).then(results => {
     allItems = results.flat();
 
-    // Filtra notizie entro 48 ore
+    // Solo ultime 24 ore
     const now = new Date();
-    allItems = allItems.filter(n => (now - n.pubDate) <= 48 * 60 * 60 * 1000);
+    allItems = allItems.filter(n => (now - n.pubDate) <= 24 * 60 * 60 * 1000);
 
-    // Ordina per testata, poi per data decrescente
-    allItems.sort((a, b) => {
-      const idxA = sourceOrder.indexOf(a.source);
-      const idxB = sourceOrder.indexOf(b.source);
-      if (idxA === idxB) {
-        return b.pubDate - a.pubDate;
-      }
-      return idxA - idxB;
-    });
+    // Ordinamento per data decrescente
+    allItems.sort((a, b) => b.pubDate - a.pubDate);
 
     renderAllNews();
   });
