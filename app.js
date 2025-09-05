@@ -43,11 +43,13 @@ function renderAllNews() {
     const li = document.createElement("li");
     li.style.backgroundColor = sourceColors[item.source] || "#C9E2F8";
 
-    const descLines = item.description.split("\n").slice(0,4).join("<br>");
+    const description = item.description || "";
+    const safeDescription = description.replace(/(<([^>]+)>)/gi, ""); // rimuove HTML
+    const shortDesc = safeDescription.length > 300 ? safeDescription.substring(0, 300) + "..." : safeDescription;
 
     li.innerHTML = `
       <a href="${item.link}" target="_blank" class="news-title">${item.title}</a>
-      <div class="news-desc">${descLines}</div>
+      <div class="news-desc">${shortDesc}</div>
       <div class="news-source">${item.source}</div>
     `;
 
@@ -75,13 +77,13 @@ function loadNews() {
             return true;
           })
           .map(item => {
-            const pubDate = new Date(item.pubDate);
+            const pubDate = new Date(item.pubDate || Date.now());
             pubDate.setHours(pubDate.getHours() - 2); // fuso orario
 
             return {
-              title: item.title,
-              link: item.link,
-              description: item.description.replace(/(<([^>]+)>)/gi, ""), // rimuove HTML
+              title: item.title || "Titolo mancante",
+              link: item.link || "#",
+              description: item.description || "",
               pubDate: pubDate,
               source: feed.name
             };
