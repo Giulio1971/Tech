@@ -2,7 +2,8 @@
 // Parole da escludere (case-insensitive)
 const excludedWords = [
   "Oroscopo", "Basket", "Calcio", "Tennis",
-  "Formula 1", "Nuoto", "partita","MotoGP", "campionato", "mondiali", "Juventus", "Milan", "Inter"
+  "Formula 1", "Nuoto", "partita","MotoGP", "campionato", "mondiali", 
+  "Juventus", "Milan", "Inter", "Champions"
 ];
 
 // Parole da evidenziare e portare in cima (case-insensitive)
