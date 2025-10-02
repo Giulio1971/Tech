@@ -1,19 +1,3 @@
-**Pseudocode Plan:**
-
-1. Add the new RSS feed to the feeds array with a special identifier
-2. Add a light red color definition for this feed
-3. Modify the item processing to identify items from this special feed
-4. Update the sorting logic to place items from this feed at the very top
-5. Apply light red background to items from this feed
-
-**Detailed Steps:**
-- Add feed object with special flag 'isSpecial: true'
-- Define light red color (#FFE4E4)
-- In item mapping, add 'isSpecial' property based on feed
-- In sorting: special items → priority items → televideo → normal
-- In rendering, check for 'isSpecial' flag to apply light red background
-
-```javascript
 // Parole da escludere (case-insensitive)
 const excludedWords = [
   "Oroscopo", "Basket", "Calcio", "Tennis",
@@ -29,7 +13,6 @@ const priorityWords = [
 
 // Lista completa dei feed RSS
 const feeds = [
-  { name: "RSU Ericsson", url: "https://politepol.com/fd/8In5MvNwmHzA.xml", isSpecial: true },
   { name: "Il Fatto Quotidiano", url: "https://www.ilfattoquotidiano.it/rss/" },
   { name: "Fanpage", url: "https://www.fanpage.it/feed/" },
   { name: "Corriere Politica", url: "https://www.corriere.it/rss/politica.xml" },
@@ -47,18 +30,18 @@ const feeds = [
   { name: "TGCOM24 Cronaca", url: "https://www.tgcom24.mediaset.it/rss/cronaca.xml" },
   { name: "TGCOM24 Politica", url: "https://www.tgcom24.mediaset.it/rss/politica.xml" },
   { name: "Wired Italia", url: "https://www.wired.it/feed/" },
-  { name: "Televideo RAI", url: "https://www.servizitelevideo.rai.it/televideo/pub/rss101.xml" }
+  { name: "Televideo RAI", url: "https://www.servizitelevideo.rai.it/televideo/pub/rss101.xml" },
+  { name: "Ericsson RSU", url: "https://politepol.com/fd/8In5MvNwmHzA.xml" },
+  { name: "Fistel", url: "https://politepol.com/fd/ag7rO151YT2D.xml" }
 ];
 
 // Colore di default (celeste chiaro)
 const sourceColors = {};
-feeds.forEach(f => {
-  if (f.isSpecial) {
-    sourceColors[f.name] = "#FFE4E4"; // rosso chiaro per feed speciale
-  } else {
-    sourceColors[f.name] = "#C9E2F8"; // celeste chiaro default
-  }
-});
+feeds.forEach(f => sourceColors[f.name] = "#C9E2F8");
+
+// Colore giallo per i feed speciali
+sourceColors["Ericsson RSU"] = "#FFF799";
+sourceColors["Fistel"] = "#FFF799";
 
 const container = document.getElementById("news");
 const list = document.createElement("ul");
@@ -71,13 +54,12 @@ function renderAllNews() {
   list.innerHTML = "";
   allItems.forEach(item => {
     const li = document.createElement("li");
-    // Priorità colori: special > priority > source default
-    if (item.isSpecial) {
-      li.style.backgroundColor = "#FFE4E4"; // rosso chiaro
-    } else if (item.priority) {
-      li.style.backgroundColor = "#F8C9E2"; // rosa
+
+    // Se notizia "speciale", sfondo giallo
+    if (item.special) {
+      li.style.backgroundColor = "#FFF799";
     } else {
-      li.style.backgroundColor = sourceColors[item.source] || "#C9E2F8";
+      li.style.backgroundColor = item.priority ? "#F8C9E2" : (sourceColors[item.source] || "#C9E2F8");
     }
 
     const description = item.description || "";
@@ -130,6 +112,15 @@ function loadNews() {
               }
             }
 
+            // Verifica se è da feed speciale (Ericsson/Fistel) e non più vecchia di 7 giorni
+            let isSpecial = false;
+            if ((feed.name === "Ericsson RSU" || feed.name === "Fistel")) {
+              const now = new Date();
+              if ((now - pubDate) <= 7 * 24 * 60 * 60 * 1000) {
+                isSpecial = true;
+              }
+            }
+
             return {
               title: title || "Titolo mancante",
               link: item.link || "#",
@@ -137,7 +128,7 @@ function loadNews() {
               pubDate: pubDate,
               source: feed.name,
               priority: isPriority,
-              isSpecial: feed.isSpecial || false
+              special: isSpecial
             };
           })
         )
@@ -149,15 +140,15 @@ function loadNews() {
   ).then(results => {
     let items = results.flat();
 
-    // Solo ultime 24 ore
+    // Solo ultime 24 ore (per gli altri feed)
     const now = new Date();
-    items = items.filter(n => (now - n.pubDate) <= 24 * 60 * 60 * 1000);
+    items = items.filter(n => n.special || ((now - n.pubDate) <= 24 * 60 * 60 * 1000));
 
-    // Split in speciali, prioritarie, televideo e normali
-    const specialItems = items.filter(n => n.isSpecial);
-    const priorityItems = items.filter(n => n.priority && !n.isSpecial);
-    const televideoItems = items.filter(n => n.source === "Televideo RAI" && !n.priority && !n.isSpecial);
-    const normalItems = items.filter(n => n.source !== "Televideo RAI" && !n.priority && !n.isSpecial);
+    // Split in gruppi
+    const specialItems = items.filter(n => n.special);
+    const priorityItems = items.filter(n => n.priority && !n.special);
+    const televideoItems = items.filter(n => n.source === "Televideo RAI" && !n.priority && !n.special);
+    const normalItems = items.filter(n => !n.priority && !n.special && n.source !== "Televideo RAI");
 
     // Funzione per assegnare "peso" in base al gruppo testata
     function getSourceRank(source) {
@@ -169,11 +160,7 @@ function loadNews() {
       return 6;
     }
 
-    // Ordina tutti i gruppi per data
-    specialItems.sort((a, b) => b.pubDate - a.pubDate);
-    priorityItems.sort((a, b) => b.pubDate - a.pubDate);
-    
-    // Ordina le normali in base a rank e data
+    // Ordina normali in base a rank e data
     normalItems.sort((a, b) => {
       const rankA = getSourceRank(a.source);
       const rankB = getSourceRank(b.source);
@@ -181,8 +168,11 @@ function loadNews() {
       return b.pubDate - a.pubDate;
     });
 
-    // Ordina anche Televideo per data
+    // Ordina Televideo per data
     televideoItems.sort((a, b) => b.pubDate - a.pubDate);
+
+    // Ordina speciali per data (decrescente)
+    specialItems.sort((a, b) => b.pubDate - a.pubDate);
 
     // Combina: speciali → prioritarie → televideo → normali
     allItems = [...specialItems, ...priorityItems, ...televideoItems, ...normalItems];
@@ -196,4 +186,3 @@ loadNews();
 
 // Refresh ogni 5 minuti
 setInterval(loadNews, 300000);
-```
