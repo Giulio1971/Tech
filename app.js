@@ -1,4 +1,19 @@
+**Pseudocode Plan:**
 
+1. Add the new RSS feed to the feeds array with a special identifier
+2. Add a light red color definition for this feed
+3. Modify the item processing to identify items from this special feed
+4. Update the sorting logic to place items from this feed at the very top
+5. Apply light red background to items from this feed
+
+**Detailed Steps:**
+- Add feed object with special flag 'isSpecial: true'
+- Define light red color (#FFE4E4)
+- In item mapping, add 'isSpecial' property based on feed
+- In sorting: special items → priority items → televideo → normal
+- In rendering, check for 'isSpecial' flag to apply light red background
+
+```javascript
 // Parole da escludere (case-insensitive)
 const excludedWords = [
   "Oroscopo", "Basket", "Calcio", "Tennis",
@@ -14,6 +29,7 @@ const priorityWords = [
 
 // Lista completa dei feed RSS
 const feeds = [
+  { name: "RSU Ericsson", url: "https://politepol.com/fd/8In5MvNwmHzA.xml", isSpecial: true },
   { name: "Il Fatto Quotidiano", url: "https://www.ilfattoquotidiano.it/rss/" },
   { name: "Fanpage", url: "https://www.fanpage.it/feed/" },
   { name: "Corriere Politica", url: "https://www.corriere.it/rss/politica.xml" },
@@ -36,7 +52,13 @@ const feeds = [
 
 // Colore di default (celeste chiaro)
 const sourceColors = {};
-feeds.forEach(f => sourceColors[f.name] = "#C9E2F8");
+feeds.forEach(f => {
+  if (f.isSpecial) {
+    sourceColors[f.name] = "#FFE4E4"; // rosso chiaro per feed speciale
+  } else {
+    sourceColors[f.name] = "#C9E2F8"; // celeste chiaro default
+  }
+});
 
 const container = document.getElementById("news");
 const list = document.createElement("ul");
@@ -49,7 +71,14 @@ function renderAllNews() {
   list.innerHTML = "";
   allItems.forEach(item => {
     const li = document.createElement("li");
-    li.style.backgroundColor = item.priority ? "#F8C9E2" : (sourceColors[item.source] || "#C9E2F8");
+    // Priorità colori: special > priority > source default
+    if (item.isSpecial) {
+      li.style.backgroundColor = "#FFE4E4"; // rosso chiaro
+    } else if (item.priority) {
+      li.style.backgroundColor = "#F8C9E2"; // rosa
+    } else {
+      li.style.backgroundColor = sourceColors[item.source] || "#C9E2F8";
+    }
 
     const description = item.description || "";
     const safeDescription = description.replace(/(<([^>]+)>)/gi, ""); // rimuove HTML
@@ -107,7 +136,8 @@ function loadNews() {
               description: description || "",
               pubDate: pubDate,
               source: feed.name,
-              priority: isPriority
+              priority: isPriority,
+              isSpecial: feed.isSpecial || false
             };
           })
         )
@@ -123,10 +153,11 @@ function loadNews() {
     const now = new Date();
     items = items.filter(n => (now - n.pubDate) <= 24 * 60 * 60 * 1000);
 
-    // Split in prioritarie, televideo e normali
-    const priorityItems = items.filter(n => n.priority);
-    const televideoItems = items.filter(n => n.source === "Televideo RAI" && !n.priority);
-    const normalItems = items.filter(n => n.source !== "Televideo RAI" && !n.priority);
+    // Split in speciali, prioritarie, televideo e normali
+    const specialItems = items.filter(n => n.isSpecial);
+    const priorityItems = items.filter(n => n.priority && !n.isSpecial);
+    const televideoItems = items.filter(n => n.source === "Televideo RAI" && !n.priority && !n.isSpecial);
+    const normalItems = items.filter(n => n.source !== "Televideo RAI" && !n.priority && !n.isSpecial);
 
     // Funzione per assegnare "peso" in base al gruppo testata
     function getSourceRank(source) {
@@ -138,6 +169,10 @@ function loadNews() {
       return 6;
     }
 
+    // Ordina tutti i gruppi per data
+    specialItems.sort((a, b) => b.pubDate - a.pubDate);
+    priorityItems.sort((a, b) => b.pubDate - a.pubDate);
+    
     // Ordina le normali in base a rank e data
     normalItems.sort((a, b) => {
       const rankA = getSourceRank(a.source);
@@ -149,8 +184,8 @@ function loadNews() {
     // Ordina anche Televideo per data
     televideoItems.sort((a, b) => b.pubDate - a.pubDate);
 
-    // Combina: prioritarie → televideo → normali
-    allItems = [...priorityItems, ...televideoItems, ...normalItems];
+    // Combina: speciali → prioritarie → televideo → normali
+    allItems = [...specialItems, ...priorityItems, ...televideoItems, ...normalItems];
 
     renderAllNews();
   });
@@ -161,3 +196,4 @@ loadNews();
 
 // Refresh ogni 5 minuti
 setInterval(loadNews, 300000);
+```
